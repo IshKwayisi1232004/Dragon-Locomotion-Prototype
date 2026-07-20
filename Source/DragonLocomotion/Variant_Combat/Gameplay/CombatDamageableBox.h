@@ -64,8 +64,5 @@ public:
 	/** Handles healing events */
 	virtual void ApplyHealing(float Healing, AActor* Healer) override;
 
-	/** Allows reaction to incoming attacks */
-	virtual void NotifyDanger(const FVector& DangerLocation, AActor* DangerSource) override;
-
 	// ~End CombatDamageable interface
 };

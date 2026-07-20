@@ -76,8 +76,3 @@ void ACombatDamageableBox::ApplyHealing(float Healing, AActor* Healer)
 	// stub
 }
 
-void ACombatDamageableBox::NotifyDanger(const FVector& DangerLocation, AActor* DangerSource)
-{
-	// stub
-}
-

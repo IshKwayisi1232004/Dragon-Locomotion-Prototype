@@ -69,10 +69,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category ="Input")
 	UInputAction* ChargedAttackAction;
 
-	/** Toggle Camera Side Input Action */
-	UPROPERTY(EditAnywhere, Category ="Input")
-	UInputAction* ToggleCameraAction;
-
 	/** Max amount of HP the character will have on respawn */
 	UPROPERTY(EditAnywhere, Category="Damage", meta = (ClampMin = 0, ClampMax = 100))
 	float MaxHP = 5.0f;
@@ -110,14 +106,6 @@ protected:
 	/** Radius of the sphere trace for melee attacks */
 	UPROPERTY(EditAnywhere, Category="Melee Attack|Trace", meta = (ClampMin = 0, ClampMax = 200, Units = "cm"))
 	float MeleeTraceRadius = 75.0f;
-
-	/** Distance ahead of the character that enemies will be notified of incoming attacks */
-	UPROPERTY(EditAnywhere, Category="Melee Attack|Trace", meta = (ClampMin = 0, ClampMax = 500, Units="cm"))
-	float DangerTraceDistance = 300.0f;
-
-	/** Radius of the sphere trace to notify enemies of incoming attacks */
-	UPROPERTY(EditAnywhere, Category="Melee Attack|Trace", meta = (ClampMin = 0, ClampMax = 200, Units = "cm"))
-	float DangerTraceRadius = 100.0f;
 
 	/** Amount of damage a melee attack will deal */
 	UPROPERTY(EditAnywhere, Category="Melee Attack|Damage", meta = (ClampMin = 0, ClampMax = 100))
@@ -164,9 +152,6 @@ protected:
 	/** If true, the charged attack hold check has been tested at least once */
 	bool bHasLoopedChargedAttack = false;
 
-	/** If true, the character wants to release and resolve the charged attack. */
-	bool bHasReleasedChargedAttack = false;
-
 	/** Camera boom length while the character is dead */
 	UPROPERTY(EditAnywhere, Category="Camera", meta = (ClampMin = 0, ClampMax = 1000, Units = "cm"))
 	float DeathCameraDistance = 400.0f;
@@ -209,13 +194,6 @@ protected:
 
 	/** Called for combo attack input released */
 	void ChargedAttackReleased();
-
-	/** Called for toggle camera side input */
-	void ToggleCamera();
-
-	/** BP hook to animate the camera side switch */
-	UFUNCTION(BlueprintImplementableEvent, Category="Combat")
-	void BP_ToggleCamera();
 
 public:
 
@@ -271,15 +249,9 @@ public:
 	/** Performs the charged attack hold check */
 	virtual void CheckChargedAttack() override;
 
-	/** Loops or resolves the charged attack animation */
-	void LoopOrResolveChargedAttack();
-
 	// ~end CombatAttacker interface
 
 	// ~begin CombatDamageable interface
-
-	/** Notifies nearby enemies that an attack is coming so they can react */
-	void NotifyEnemiesOfIncomingAttack();
 
 	/** Handles damage and knockback events */
 	virtual void ApplyDamage(float Damage, AActor* DamageCauser, const FVector& DamageLocation, const FVector& DamageImpulse) override;
@@ -289,9 +261,6 @@ public:
 
 	/** Handles healing events */
 	virtual void ApplyHealing(float Healing, AActor* Healer) override;
-
-	/** Allows reaction to incoming attacks */
-	virtual void NotifyDanger(const FVector& DangerLocation, AActor* DangerSource) override;
 
 	// ~end CombatDamageable interface
 

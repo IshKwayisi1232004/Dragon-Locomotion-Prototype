@@ -22,7 +22,13 @@ ACombatCheckpointVolume::ACombatCheckpointVolume()
 }
 
 void ACombatCheckpointVolume::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{		
+{
+	// ensure we use this only once
+	if (bCheckpointUsed)
+	{
+		return;
+	}
+		
 	// has the player entered this volume?
 	ACombatCharacter* PlayerCharacter = Cast<ACombatCharacter>(OtherActor);
 
@@ -30,6 +36,9 @@ void ACombatCheckpointVolume::OnOverlap(UPrimitiveComponent* OverlappedComponent
 	{
 		if (ACombatPlayerController* PC = Cast<ACombatPlayerController>(PlayerCharacter->GetController()))
 		{
+			// raise the checkpoint used flag
+			bCheckpointUsed = true;
+
 			// update the player's respawn checkpoint
 			PC->SetRespawnTransform(PlayerCharacter->GetActorTransform());
 		}

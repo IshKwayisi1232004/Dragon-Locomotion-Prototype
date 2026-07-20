@@ -46,21 +46,12 @@ struct FStateTreeGetPlayerTask : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
-	FStateTreeGetPlayerTask()
-	{
-		// disable tick
-		bShouldCallTick = false;
-
-		// skip state change events if this is sustained
-		bShouldStateChangeOnReselect = false;
-	}
-
 	/* Ensure we're using the correct instance data struct */
 	using FInstanceDataType = FStateTreeGetPlayerInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-		
-	/** Runs when the owning state is entered */
-	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+
+	/** Runs while the owning state is active */
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 
 #if WITH_EDITOR
 	virtual FText GetDescription(const FGuid& ID, FStateTreeDataView InstanceDataView, const IStateTreeBindingLookup& BindingLookup, EStateTreeNodeFormatting Formatting = EStateTreeNodeFormatting::Text) const override;

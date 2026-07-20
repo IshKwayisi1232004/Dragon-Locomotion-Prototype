@@ -2,7 +2,6 @@
 
 
 #include "SideScrollingNPC.h"
-#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 

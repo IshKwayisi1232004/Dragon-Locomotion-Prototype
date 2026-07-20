@@ -14,7 +14,7 @@ class ACombatCharacter;
  *  Manages input mappings
  *  Respawns the player character at the checkpoint when it's destroyed
  */
-UCLASS(abstract, Config="Game")
+UCLASS(abstract)
 class ACombatPlayerController : public APlayerController
 {
 	GENERATED_BODY()
@@ -34,12 +34,7 @@ protected:
 	TSubclassOf<UUserWidget> MobileControlsWidgetClass;
 
 	/** Pointer to the mobile controls widget */
-	UPROPERTY()
 	TObjectPtr<UUserWidget> MobileControlsWidget;
-
-	/** If true, the player will use UMG touch controls even if not playing on mobile platforms */
-	UPROPERTY(EditAnywhere, Config, Category = "Input|Touch Controls")
-	bool bForceTouchControls = false;
 
 	/** Character class to respawn when the possessed pawn is destroyed */
 	UPROPERTY(EditAnywhere, Category="Respawn")
@@ -69,8 +64,5 @@ protected:
 	/** Called if the possessed pawn is destroyed */
 	UFUNCTION()
 	void OnPawnDestroyed(AActor* DestroyedActor);
-
-	/** Returns true if the player should use UMG touch controls */
-	bool ShouldUseTouchControls() const;
 
 };

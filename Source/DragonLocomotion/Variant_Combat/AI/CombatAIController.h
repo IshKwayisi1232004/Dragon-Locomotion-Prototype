@@ -24,9 +24,4 @@ public:
 
 	/** Constructor */
 	ACombatAIController();
-
-protected:
-
-	/** Pawn Initialization */
-	virtual void OnPossess(APawn* InPawn) override;
 };

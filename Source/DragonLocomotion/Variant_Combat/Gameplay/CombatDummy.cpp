@@ -49,8 +49,3 @@ void ACombatDummy::ApplyHealing(float Healing, AActor* Healer)
 {
 	// unused
 }
-
-void ACombatDummy::NotifyDanger(const FVector& DangerLocation, AActor* DangerSource)
-{
-	// unused
-}

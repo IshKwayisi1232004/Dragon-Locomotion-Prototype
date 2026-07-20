@@ -7,48 +7,21 @@
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 
-EStateTreeRunStatus FStateTreeGetPlayerTask::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FStateTreeGetPlayerTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	// get the instance data
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 
-	// reset the selected target
-	APawn* SelectedTarget = nullptr;
-	float ClosestDistance = 1000000000000000000.0f;
+	// set the player pawn as the target
+	InstanceData.TargetPlayer = UGameplayStatics::GetPlayerPawn(InstanceData.Controller.Get(), 0);
 
-	// iterate through each local player
-	const int32 NumPlayers = UGameplayStatics::GetNumLocalPlayerControllers(InstanceData.Controller.Get());
-
-	for (int32 i = 0; i < NumPlayers; ++i)
+	// are the NPC and target valid?
+	if (IsValid(InstanceData.TargetPlayer) && IsValid(InstanceData.NPC))
 	{
-		if (APawn* Current = UGameplayStatics::GetPlayerPawn(InstanceData.Controller.Get(), i))
-		{
-			// compute the distance to the target
-			const float TargetDist = (Current->GetActorLocation() - InstanceData.NPC->GetActorLocation()).Size();
-
-			// if we haven't selected a target, or this one is closer to the current one, choose this pawn as target
-			if (!SelectedTarget || TargetDist < ClosestDistance)
-			{
-				SelectedTarget = Current;
-				ClosestDistance = TargetDist;
-			}
-		}
+		InstanceData.bValidTarget = FVector::Distance(InstanceData.NPC->GetActorLocation(), InstanceData.TargetPlayer->GetActorLocation()) < InstanceData.RangeMax;
 	}
 
-	// set the selected target, assume out of range by default
-	InstanceData.TargetPlayer = SelectedTarget;
-	InstanceData.bValidTarget = false;
-
-	if (SelectedTarget)
-	{
-		// consider this a valid target if it's within range 
-		const float TargetDist = (SelectedTarget->GetActorLocation() - InstanceData.NPC->GetActorLocation()).Size();
-
-		InstanceData.bValidTarget = TargetDist < InstanceData.RangeMax;
-	}
-
-	// succeed or fail depending on target validity
-	return InstanceData.bValidTarget ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	return EStateTreeRunStatus::Running;
 }
 
 #if WITH_EDITOR

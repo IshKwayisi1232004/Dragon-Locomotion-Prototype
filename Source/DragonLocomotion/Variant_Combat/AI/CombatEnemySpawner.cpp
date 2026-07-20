@@ -2,7 +2,6 @@
 
 
 #include "CombatEnemySpawner.h"
-#include "Engine/World.h"
 #include "Components/SceneComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/ArrowComponent.h"

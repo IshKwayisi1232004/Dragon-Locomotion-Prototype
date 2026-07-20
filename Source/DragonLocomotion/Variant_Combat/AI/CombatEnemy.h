@@ -136,12 +136,6 @@ protected:
 	/** Attack montage ended delegate */
 	FOnMontageEnded OnAttackMontageEnded;
 
-	/** Last recorded location we're being attacked from */
-	FVector LastDangerLocation = FVector::ZeroVector;
-
-	/** Last recorded game time we were attacked */
-	float LastDangerTime = -1000.0f;
-
 public:
 	/** Attack completed internal delegate to notify StateTree tasks */
 	FOnEnemyAttackCompleted OnAttackCompleted;
@@ -163,12 +157,6 @@ public:
 
 	/** Called from a delegate when the attack montage ends */
 	void AttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	/** Returns the last recorded location we were attacked from */
-	const FVector& GetLastDangerLocation() const;
-
-	/** Returns the last game time we were attacked */
-	float GetLastDangerTime() const;
 
 public:
 
@@ -197,9 +185,6 @@ public:
 
 	/** Handles healing events */
 	virtual void ApplyHealing(float Healing, AActor* Healer) override;
-
-	/** Allows the enemy to react to incoming attacks */
-	virtual void NotifyDanger(const FVector& DangerLocation, AActor* DangerSource) override;
 
 	// ~end ICombatDamageable interface
 
