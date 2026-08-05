@@ -30,16 +30,41 @@ class ADragonLocomotionCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
 	
 protected:
 
+	/** Movement speed while walking */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float WalkSpeed = 250.0f;
+
+	/** Movement speed while running */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float RunSpeed = 500.0f;
+
+	/** Movement speed while charging */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float ChargeSpeed = 900.0f;
+
+	/** True while the dragon is charging */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool bIsCharging = false;
+
+	/** Analog stick input magnitude required to transition from walking to running */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float WalkRunThreshold = 0.5f;
+
 	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* JumpAction;
 
 	/** Move Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
+
+	/** Charge Input Action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ChargeAction;
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -53,6 +78,9 @@ public:
 
 	/** Constructor */
 	ADragonLocomotionCharacter();	
+
+	/** Called every frame */
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 
@@ -84,6 +112,12 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void StartCharge();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void StopCharge();
 
 public:
 

@@ -14,6 +14,8 @@
 
 ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -46,6 +48,7 @@ ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -62,6 +65,10 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Move);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Look);
+
+		// Charging 
+		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::StartCharge);
+		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::StopCharge);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Look);
@@ -94,17 +101,46 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController() != nullptr)
 	{
-		// find out which way is forward
+		const FVector2D MovementInput(Right, Forward);
+
+		// Determine the magnitude of the input.
+		const float InputMagnitude = MovementInput.Size();
+
+		// Analog stick:
+		// - Below threshold = Walk
+		// - At or above threshold = Run
+		//
+		// Keyboard:
+		// - WASD produces full-strength input, so it runs.
+
+		if (bIsCharging && Right == 0.0f && Forward == 0.0f) {
+			Forward = 1.0f;
+		}
+
+		if (!bIsCharging) {
+			if (InputMagnitude < WalkRunThreshold)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+			}
+			else
+			{
+				GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+			}
+		}
+
+		// Find out which way is forward.
 		const FRotator Rotation = GetController()->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FRotator YawRotation(0.0f, Rotation.Yaw, 0.0f);
 
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		// Get forward vector.
+		const FVector ForwardDirection =
+			FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		// Get right vector.
+		const FVector RightDirection =
+			FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// add movement 
+		// Add movement.
 		AddMovementInput(ForwardDirection, Forward);
 		AddMovementInput(RightDirection, Right);
 	}
@@ -130,4 +166,29 @@ void ADragonLocomotionCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void ADragonLocomotionCharacter::StartCharge()
+{
+	// signal the character to charge
+	bIsCharging = true;
+
+	GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
+}
+
+void ADragonLocomotionCharacter::StopCharge()
+{
+	// signal the character to stop charging
+	bIsCharging = false;
+}
+
+void ADragonLocomotionCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bIsCharging)
+	{
+		AddMovementInput(GetActorForwardVector(), 1.0f);
+	}
+
 }
