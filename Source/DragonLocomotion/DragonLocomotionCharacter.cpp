@@ -72,6 +72,10 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Look);
+
+		//Flight
+		EnhancedInputComponent->BindAction(FlightAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::OnFlightPressed);
+		EnhancedInputComponent->BindAction(FlightAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::OnFlightReleased);
 	}
 	else
 	{
@@ -180,6 +184,23 @@ void ADragonLocomotionCharacter::StopCharge()
 {
 	// signal the character to stop charging
 	bIsCharging = false;
+}
+
+void ADragonLocomotionCharacter::OnFlightPressed()
+{
+	UE_LOG(LogDragonLocomotion, Warning, TEXT("Flight Pressed"));
+
+	if (!GetCharacterMovement()->IsMovingOnGround())
+	{
+		return;
+	}
+
+	LaunchCharacter(FVector(0.0f, 0.0f, 700.0f), false, true);
+}
+
+void ADragonLocomotionCharacter::OnFlightReleased()
+{
+	UE_LOG(LogDragonLocomotion, Warning, TEXT("Flight Released"));
 }
 
 void ADragonLocomotionCharacter::Tick(float DeltaTime)

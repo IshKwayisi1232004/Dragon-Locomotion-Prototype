@@ -74,6 +74,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** Flight Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* FlightAction;
+
 public:
 
 	/** Constructor */
@@ -118,6 +122,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void StopCharge();
+
+	/** Handles flight takeoff inputs from either controls or UI interfaces */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void OnFlightPressed();
+
+	/** Handles flight takeoff inputs from either controls or UI interfaces */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void OnFlightReleased();
 
 public:
 
