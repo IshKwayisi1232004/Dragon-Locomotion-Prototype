@@ -200,6 +200,15 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 	LaunchCharacter(FVector(0.0f, 0.0f, 700.0f), false, true);
 
 	FlightSpeed = FMath::Max(GetVelocity().Length(), MinimumFlightSpeed);
+
+	FlightSpeed = FMath::Clamp(
+		GetVelocity().Length(),
+		MinimumFlightSpeed,
+		ChargeSpeed
+	);
+
+	GetCharacterMovement()->MaxFlySpeed = FlightSpeed;
+
 }
 
 void ADragonLocomotionCharacter::OnFlightReleased()
@@ -235,6 +244,10 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			bUseControllerRotationYaw = true;
+
+			UE_LOG(LogDragonLocomotion, Warning,
+				TEXT("Takeoff Speed: %f"),
+				GetVelocity().Length());
 			
 			break;
 
