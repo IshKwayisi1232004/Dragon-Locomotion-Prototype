@@ -14,6 +14,17 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+UENUM(BlueprintType)
+enum class EDragonLocomotionState : uint8
+{
+	Grounded UMETA(DisplayName = "Grounded"),
+	TakingOff UMETA(DisplayName = "Takeoff"),
+	Flying UMETA(DisplayName = "Flying"),
+	Gliding UMETA(DisplayName = "Gliding"),
+	Diving UMETA(DisplayName = "Diving"),
+	Landing UMETA(DisplayName = "Landing"),
+};
+
 /**
  *  A simple player-controllable third person character
  *  Implements a controllable orbiting camera
@@ -34,6 +45,10 @@ class ADragonLocomotionCharacter : public ACharacter
 	
 protected:
 
+	/***/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
+	EDragonLocomotionState LocomotionState = EDragonLocomotionState::Grounded;
+
 	/** Movement speed while walking */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float WalkSpeed = 250.0f;
@@ -53,6 +68,12 @@ protected:
 	/** Analog stick input magnitude required to transition from walking to running */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float WalkRunThreshold = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight")
+	float FlightSpeed; 
+
+	UPROPERTY(EditAnywhere, Category = "Flight")
+	float MinimumFlightSpeed = 300.0f;
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input")

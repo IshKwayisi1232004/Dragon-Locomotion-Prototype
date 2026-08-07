@@ -195,7 +195,11 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 		return;
 	}
 
+	LocomotionState = EDragonLocomotionState::TakingOff;
+
 	LaunchCharacter(FVector(0.0f, 0.0f, 700.0f), false, true);
+
+	FlightSpeed = FMath::Max(GetVelocity().Length(), MinimumFlightSpeed);
 }
 
 void ADragonLocomotionCharacter::OnFlightReleased()
@@ -210,6 +214,34 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 	if (bIsCharging)
 	{
 		AddMovementInput(GetActorForwardVector(), 1.0f);
+	}
+
+	switch (LocomotionState) 
+	{
+		case EDragonLocomotionState::TakingOff:
+			// Tranistion into flight 
+
+			if (GetVelocity().Z < 0.f) {
+				LocomotionState = EDragonLocomotionState::Flying;
+
+				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			}
+			break;
+
+		case EDragonLocomotionState::Flying:
+			// Continous flight
+
+			AddMovementInput(GetActorForwardVector(), 1.0f);
+
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			bUseControllerRotationYaw = true;
+			
+			break;
+
+		default:
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bUseControllerRotationYaw = false;
+			break;
 	}
 
 }
