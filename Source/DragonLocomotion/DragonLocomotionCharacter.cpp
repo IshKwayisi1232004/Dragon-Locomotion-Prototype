@@ -16,9 +16,10 @@ ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+	 
+		// Set size for collision capsule
+		GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -48,16 +49,18 @@ ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
+	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character)
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	 
+
 }
 
 void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
+		 
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -66,7 +69,7 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Move);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Look);
 
-		// Charging 
+		// Charging
 		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::StartCharge);
 		EnhancedInputComponent->BindAction(ChargeAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::StopCharge);
 
@@ -81,15 +84,25 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	{
 		UE_LOG(LogDragonLocomotion, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	 
+
 }
 
 void ADragonLocomotionCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	// route the input
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("MOVE INPUT - X: %f | Y: %f"),
+		MovementVector.X,
+		MovementVector.Y
+	);
+
 	DoMove(MovementVector.X, MovementVector.Y);
+	 
+
 }
 
 void ADragonLocomotionCharacter::Look(const FInputActionValue& Value)
@@ -97,8 +110,54 @@ void ADragonLocomotionCharacter::Look(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
+	 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+	 
+}
+
+void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
+	if (GetVelocity().Z < 0.f) {
+		LocomotionState = EDragonLocomotionState::Flying;
+		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	}
+}
+
+void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
+{
+	// Calculate target banking angle from turn input
+	TargetRoll = FlightYawInput * 35.0f;
+
+	// Get current rotation
+	FRotator Rotation = GetActorRotation();
+
+	// Apply pitch
+	Rotation.Pitch += FlightPitchInput * 60.0f * DeltaTime;
+
+	// Apply yaw
+	Rotation.Yaw += FlightYawInput * 90.0f * DeltaTime;
+
+	// Clamp pitch
+	Rotation.Pitch = FMath::Clamp(Rotation.Pitch, -45.0f, 45.0f);
+
+	// Smoothly bank into turns
+	Rotation.Roll = FMath::FInterpTo(
+		Rotation.Roll,
+		TargetRoll,
+		DeltaTime,
+		5.0f
+	);
+
+	// Apply rotation
+	SetActorRotation(Rotation);
+
+	// Continuously move in the direction the dragon is facing
+	AddMovementInput(GetActorForwardVector(), 1.0f);
+
+	// Flight should use the dragon's orientation
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = false;
+
 }
 
 void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
@@ -107,8 +166,9 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 	{
 		const FVector2D MovementInput(Right, Forward);
 
-		// Determine the magnitude of the input.
-		const float InputMagnitude = MovementInput.Size();
+		 
+			// Determine the magnitude of the input.
+			const float InputMagnitude = MovementInput.Size();
 
 		// Analog stick:
 		// - Below threshold = Walk
@@ -145,8 +205,30 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 			FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// Add movement.
+		if (LocomotionState == EDragonLocomotionState::Flying) {
+			FlightYawInput = Right;
+			FlightPitchInput = Forward;
+			return;
+		}
+
 		AddMovementInput(ForwardDirection, Forward);
 		AddMovementInput(RightDirection, Right);
+	}
+	 
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("Move Input - Right: %f | Forward: %f | State: %d"),
+		Right,
+		Forward,
+		static_cast<int32>(LocomotionState)
+	);
+
+	if (LocomotionState == EDragonLocomotionState::Flying)
+	{
+		FlightYawInput = Right;
+		FlightPitchInput = Forward;
+		return;
 	}
 }
 
@@ -177,7 +259,10 @@ void ADragonLocomotionCharacter::StartCharge()
 	// signal the character to charge
 	bIsCharging = true;
 
-	GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
+	 
+		GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
+	 
+
 }
 
 void ADragonLocomotionCharacter::StopCharge()
@@ -190,16 +275,15 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 {
 	UE_LOG(LogDragonLocomotion, Warning, TEXT("Flight Pressed"));
 
-	if (!GetCharacterMovement()->IsMovingOnGround())
-	{
-		return;
-	}
+	 
+		if (!GetCharacterMovement()->IsMovingOnGround())
+		{
+			return;
+		}
 
 	LocomotionState = EDragonLocomotionState::TakingOff;
 
 	LaunchCharacter(FVector(0.0f, 0.0f, 700.0f), false, true);
-
-	FlightSpeed = FMath::Max(GetVelocity().Length(), MinimumFlightSpeed);
 
 	FlightSpeed = FMath::Clamp(
 		GetVelocity().Length(),
@@ -208,6 +292,7 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 	);
 
 	GetCharacterMovement()->MaxFlySpeed = FlightSpeed;
+	 
 
 }
 
@@ -220,41 +305,32 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsCharging)
-	{
-		AddMovementInput(GetActorForwardVector(), 1.0f);
-	}
-
-	switch (LocomotionState) 
-	{
-		case EDragonLocomotionState::TakingOff:
-			// Tranistion into flight 
-
-			if (GetVelocity().Z < 0.f) {
-				LocomotionState = EDragonLocomotionState::Flying;
-
-				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-			}
-			break;
-
-		case EDragonLocomotionState::Flying:
-			// Continous flight
-
+		if (bIsCharging)
+		{
 			AddMovementInput(GetActorForwardVector(), 1.0f);
+		}
 
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			bUseControllerRotationYaw = true;
+	switch (LocomotionState)
+	{
+	case EDragonLocomotionState::TakingOff:
+		
+		// Tranistion into flight
+		UpdateTakeoff(DeltaTime);
+		
+		
+		break;
 
-			UE_LOG(LogDragonLocomotion, Warning,
-				TEXT("Takeoff Speed: %f"),
-				GetVelocity().Length());
-			
-			break;
+	case EDragonLocomotionState::Flying:
+		
+		// Continous flight
+		UpdateFlight(DeltaTime);
 
-		default:
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			bUseControllerRotationYaw = false;
-			break;
+		break;
+
+	default:
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bUseControllerRotationYaw = false;
+		break;
 	}
 
 }
