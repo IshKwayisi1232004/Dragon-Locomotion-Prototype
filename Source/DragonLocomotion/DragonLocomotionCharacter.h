@@ -99,6 +99,14 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
     float FlightCameraYawLimit = 45.0f;
 
+    /** Camera pitch offset while flying, relative to the dragon */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
+    float FlightCameraPitchOffset = 0.0f;
+
+    /** Maximum camera pitch offset while flying */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
+    float FlightCameraPitchLimit = 20.0f;
+
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* JumpAction;

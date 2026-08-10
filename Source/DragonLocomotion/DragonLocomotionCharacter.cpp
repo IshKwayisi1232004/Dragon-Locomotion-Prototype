@@ -126,6 +126,7 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 		// Reset flight camera
 		FlightCameraYawOffset = 0.0f;
+		FlightCameraPitchOffset = 0.0f;
 
 		// Center camera behind the dragon
 		FRotator ControlRotation = GetControlRotation();
@@ -181,11 +182,14 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 	bUseControllerRotationYaw = false;
 
 	// Keep camera behind the dragon with limited offset
-	FRotator ControlRoation = GetControlRotation();
-	ControlRoation.Yaw =
+	FRotator ControlRotation = GetControlRotation();
+	ControlRotation.Yaw =
 		GetActorRotation().Yaw + FlightCameraYawOffset;
 
-	GetController()->SetControlRotation(ControlRoation);
+	ControlRotation.Pitch =
+		GetActorRotation().Pitch + FlightCameraPitchOffset;
+
+	GetController()->SetControlRotation(ControlRotation);
 
 }
 
@@ -268,13 +272,24 @@ void ADragonLocomotionCharacter::DoLook(float Yaw, float Pitch)
 				FlightCameraYawLimit
 			);
 
+			// Limit vertical camera rotation relative to the dragon
+			FlightCameraPitchOffset = FMath::Clamp(
+				FlightCameraPitchOffset + Pitch,
+				-FlightCameraPitchOffset,
+				FlightCameraPitchOffset
+			);
+
 			// Allow normal vertical camera rotation
 			AddControllerPitchInput(Pitch);
 
 			// Keep camera yaw relative to dragon
 			FRotator ControlRotation = GetControlRotation();
+			
 			ControlRotation.Yaw =
 				GetActorRotation().Yaw + FlightCameraYawOffset;
+
+			ControlRotation.Pitch =
+				GetActorRotation().Pitch + FlightCameraPitchOffset;
 
 			GetController()->SetControlRotation(ControlRotation);
 		}
