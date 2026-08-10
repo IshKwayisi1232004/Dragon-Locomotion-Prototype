@@ -91,6 +91,14 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     float TargetPitch = 0.0f;
 
+    /** Camera yaw offset while flying, relative to the dragon */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
+    float FlightCameraYawOffset = 0.0f;
+
+    /** Maxximum camera yaw offset while flying */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
+    float FlightCameraYawLimit = 45.0f;
+
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* JumpAction;

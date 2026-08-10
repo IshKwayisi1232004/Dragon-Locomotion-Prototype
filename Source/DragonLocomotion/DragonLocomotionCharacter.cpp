@@ -123,6 +123,14 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 	if (GetVelocity().Z < 0.f) {
 		LocomotionState = EDragonLocomotionState::Flying;
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+		// Reset flight camera
+		FlightCameraYawOffset = 0.0f;
+
+		// Center camera behind the dragon
+		FRotator ControlRotation = GetControlRotation();
+		ControlRotation.Yaw = GetActorRotation().Yaw;
+		GetController()->SetControlRotation(ControlRotation);
 	}
 }
 
@@ -171,6 +179,13 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 	// Flight should use the dragon's orientation
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
+
+	// Keep camera behind the dragon with limited offset
+	FRotator ControlRoation = GetControlRotation();
+	ControlRoation.Yaw =
+		GetActorRotation().Yaw + FlightCameraYawOffset;
+
+	GetController()->SetControlRotation(ControlRoation);
 
 }
 
@@ -244,9 +259,31 @@ void ADragonLocomotionCharacter::DoLook(float Yaw, float Pitch)
 {
 	if (GetController() != nullptr)
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
+		if (LocomotionState == EDragonLocomotionState::Flying)
+		{
+			// Limit camera rotation relative to the dragon
+			FlightCameraYawOffset = FMath::Clamp(
+				FlightCameraYawOffset + Yaw,
+				-FlightCameraYawLimit,
+				FlightCameraYawLimit
+			);
+
+			// Allow normal vertical camera rotation
+			AddControllerPitchInput(Pitch);
+
+			// Keep camera yaw relative to dragon
+			FRotator ControlRotation = GetControlRotation();
+			ControlRotation.Yaw =
+				GetActorRotation().Yaw + FlightCameraYawOffset;
+
+			GetController()->SetControlRotation(ControlRotation);
+		}
+		else 
+		{
+			// Ground camera rotation is free
+			AddControllerYawInput(Yaw);
+			AddControllerPitchInput(Pitch);
+		}
 	}
 }
 
@@ -267,8 +304,7 @@ void ADragonLocomotionCharacter::StartCharge()
 	// signal the character to charge
 	bIsCharging = true;
 
-	 
-		GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
 	 
 
 }
