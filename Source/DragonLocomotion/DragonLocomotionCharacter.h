@@ -83,8 +83,13 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     float FlightPitchInput = 0.0f;
 
+    /** Calculate target banking angle */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     float TargetRoll = 0.f;
+
+    /** Calcualte target pitch */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
+    float TargetPitch = 0.0f;
 
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")

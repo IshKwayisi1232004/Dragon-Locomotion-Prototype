@@ -67,6 +67,9 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::Move);
+
+		// Camera
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Look);
 
 		// Charging
@@ -125,14 +128,25 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 {
-	// Calculate target banking angle from turn input
+	// Calculate target pitch and banking from input
+	TargetPitch = FlightPitchInput * 45.0f;
 	TargetRoll = FlightYawInput * 35.0f;
 
 	// Get current rotation
 	FRotator Rotation = GetActorRotation();
 
 	// Apply pitch
-	Rotation.Pitch += FlightPitchInput * 60.0f * DeltaTime;
+	Rotation.Pitch = FMath::FInterpTo(
+		Rotation.Pitch,
+		TargetPitch,
+		DeltaTime,
+		3.0f);
+
+	Rotation.Pitch = FMath::Clamp(
+		Rotation.Pitch,
+		-45.0f,
+		45.0f
+	);
 
 	// Apply yaw
 	Rotation.Yaw += FlightYawInput * 90.0f * DeltaTime;
@@ -167,8 +181,8 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		const FVector2D MovementInput(Right, Forward);
 
 		 
-			// Determine the magnitude of the input.
-			const float InputMagnitude = MovementInput.Size();
+		// Determine the magnitude of the input.
+		const float InputMagnitude = MovementInput.Size();
 
 		// Analog stick:
 		// - Below threshold = Walk
@@ -207,7 +221,7 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		// Add movement.
 		if (LocomotionState == EDragonLocomotionState::Flying) {
 			FlightYawInput = Right;
-			FlightPitchInput = Forward;
+			FlightPitchInput = -Forward;
 			return;
 		}
 
@@ -224,12 +238,6 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		static_cast<int32>(LocomotionState)
 	);
 
-	if (LocomotionState == EDragonLocomotionState::Flying)
-	{
-		FlightYawInput = Right;
-		FlightPitchInput = Forward;
-		return;
-	}
 }
 
 void ADragonLocomotionCharacter::DoLook(float Yaw, float Pitch)
