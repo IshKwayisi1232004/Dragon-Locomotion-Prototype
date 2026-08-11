@@ -193,6 +193,42 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 
 }
 
+void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
+	// Continue moving forward
+	AddMovementInput(GetActorForwardVector(), 1.0f);
+
+	// Apply yaw
+	FRotator Rotation = GetActorRotation();
+
+	Rotation.Yaw += FlightYawInput * 90.0f * DeltaTime;
+
+	// Apply banking
+	TargetRoll = FlightYawInput * 35.0f;
+
+	Rotation.Roll = FMath::FInterpTo(
+		Rotation.Roll,
+		TargetRoll,
+		DeltaTime,
+		5.0f
+	);
+
+	SetActorRotation(Rotation);
+
+	// Gradually descend
+	AddMovementInput(FVector::DownVector, GlideFallRate * DeltaTime);
+
+	// Keep flight movement behavior
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = false;
+
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("GLIDING - Z Velocity: %f"),
+		GetCharacterMovement()->Velocity.Z
+	);
+}
+
 void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController() != nullptr)
@@ -238,9 +274,21 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 			FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// Add movement.
-		if (LocomotionState == EDragonLocomotionState::Flying) {
+		if (LocomotionState == EDragonLocomotionState::Flying ||
+			LocomotionState == EDragonLocomotionState::Gliding)
+		{
 			FlightYawInput = Right;
 			FlightPitchInput = -Forward;
+
+			if (FMath::Abs(FlightPitchInput) < 0.1f) 
+			{
+				LocomotionState = EDragonLocomotionState::Gliding;
+			}
+			else 
+			{
+				LocomotionState = EDragonLocomotionState::Flying;
+			}
+
 			return;
 		}
 
@@ -263,7 +311,8 @@ void ADragonLocomotionCharacter::DoLook(float Yaw, float Pitch)
 {
 	if (GetController() != nullptr)
 	{
-		if (LocomotionState == EDragonLocomotionState::Flying)
+		if (LocomotionState == EDragonLocomotionState::Flying ||
+			LocomotionState == EDragonLocomotionState::Gliding)
 		{
 			// Limit camera rotation relative to the dragon
 			FlightCameraYawOffset = FMath::Clamp(
@@ -371,25 +420,31 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 
 	switch (LocomotionState)
 	{
-	case EDragonLocomotionState::TakingOff:
+		case EDragonLocomotionState::TakingOff:
 		
-		// Tranistion into flight
-		UpdateTakeoff(DeltaTime);
+			// Tranistion into flight
+			UpdateTakeoff(DeltaTime);
 		
-		
-		break;
+			break;
 
-	case EDragonLocomotionState::Flying:
+		case EDragonLocomotionState::Flying:
 		
-		// Continous flight
-		UpdateFlight(DeltaTime);
+			// Continous flight
+			UpdateFlight(DeltaTime);
 
-		break;
+			break;
 
-	default:
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		bUseControllerRotationYaw = false;
-		break;
-	}
+		case EDragonLocomotionState::Gliding:
+			
+			// Transition into glide 
+			UpdateGlide(DeltaTime);
+
+			break;
+
+		default:
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bUseControllerRotationYaw = false;
+			break;
+		}
 
 }

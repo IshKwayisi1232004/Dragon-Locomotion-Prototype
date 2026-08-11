@@ -107,6 +107,11 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
     float FlightCameraPitchLimit = 20.0f;
 
+    /***/
+    UPROPERTY(EditAnywhere, Category = "Gliding")
+    float GlideFallRate = 100.0f;
+
+
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* JumpAction;
@@ -158,6 +163,8 @@ protected:
     void UpdateTakeoff(float DeltaTime);
 
     void UpdateFlight(float DeltaTime);
+
+    void UpdateGlide(float DeltaTime);
      
 
 public:

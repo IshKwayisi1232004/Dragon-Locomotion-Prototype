@@ -25,3 +25,15 @@ The goal of this project is to design a highly responsive locomotion system feat
 - [ ] Dive
 - [ ] Climbing
 - [ ] Camera system
+
+## License
+
+The original source code developed for this project is licensed under the MIT License.
+
+This license applies only to original work contained within this repository. Unreal Engine, third-party assets, animations, models, and other externally provided content are not covered by this license and remain subject to their respective licenses and terms of use.
+
+Third-Party Content
+
+This project uses Unreal Engine and third-party assets for development and demonstration purposes. Third-party content remains the property of its respective owners and is subject to the licenses under which it was provided.
+
+The MIT License does not grant permission to use, reproduce, modify, or redistribute third-party content included with the project.
