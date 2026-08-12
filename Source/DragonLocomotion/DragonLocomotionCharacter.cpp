@@ -137,6 +137,14 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 {
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("GLIDE - OnGround: %d | MovementMode: %d | Velocity: %s"),
+		GetCharacterMovement()->IsMovingOnGround(),
+		GetCharacterMovement()->MovementMode,
+		*GetVelocity().ToString()
+	);
 
 	if (GetCharacterMovement()->IsMovingOnGround())
 	{
@@ -210,7 +218,7 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 
 void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
 
-	if (GetCharacterMovement()->IsMovingOnGround())
+	if (IsGroundDetected())
 	{
 		EnterGroundedState();
 		return;
@@ -284,6 +292,24 @@ void ADragonLocomotionCharacter::EnterGroundedState()
 		TEXT("ENTERING GROUNDED - Velocity: %s | MovementMode: %d"),
 		*GetVelocity().ToString(),
 		GetCharacterMovement()->MovementMode
+	);
+}
+
+bool ADragonLocomotionCharacter::IsGroundDetected() const {
+	FHitResult Hit; 
+
+	const FVector Start = GetActorLocation();
+	const FVector End = Start - FVector(0.0f, 0.0f, 110.0f);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	return GetWorld()->LineTraceSingleByChannel(
+		Hit,
+		Start,
+		End,
+		ECC_Visibility,
+		QueryParams
 	);
 }
 

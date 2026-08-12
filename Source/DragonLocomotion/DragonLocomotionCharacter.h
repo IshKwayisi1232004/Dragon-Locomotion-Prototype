@@ -178,6 +178,8 @@ protected:
     void UpdateLanding(float DeltaTime); 
 
     void EnterGroundedState();
+
+    bool IsGroundDetected() const;
      
 
 public:
