@@ -137,6 +137,12 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 {
+	if (FMath::Abs(FlightPitchInput) < 0.1f)
+	{
+		LocomotionState = EDragonLocomotionState::Gliding;
+		return;
+	}
+	
 	// Calculate target pitch and banking from input
 	TargetPitch = FlightPitchInput * 45.0f;
 	TargetRoll = FlightYawInput * 35.0f;
@@ -272,25 +278,6 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		// Get right vector.
 		const FVector RightDirection =
 			FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// Add movement.
-		if (LocomotionState == EDragonLocomotionState::Flying ||
-			LocomotionState == EDragonLocomotionState::Gliding)
-		{
-			FlightYawInput = Right;
-			FlightPitchInput = -Forward;
-
-			if (FMath::Abs(FlightPitchInput) < 0.1f) 
-			{
-				LocomotionState = EDragonLocomotionState::Gliding;
-			}
-			else 
-			{
-				LocomotionState = EDragonLocomotionState::Flying;
-			}
-
-			return;
-		}
 
 		AddMovementInput(ForwardDirection, Forward);
 		AddMovementInput(RightDirection, Right);
