@@ -137,7 +137,16 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 {
-	if (FMath::Abs(FlightPitchInput) < 0.1f)
+
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		EnterGroundedState();
+		return;
+	}
+
+	TimeSinceLastFlap += DeltaTime;
+
+	if (TimeSinceLastFlap >= FlightGracePeriod)
 	{
 		LocomotionState = EDragonLocomotionState::Gliding;
 		return;
@@ -200,6 +209,13 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 }
 
 void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
+
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		EnterGroundedState();
+		return;
+	}
+
 	// Continue moving forward
 	AddMovementInput(GetActorForwardVector(), 1.0f);
 
@@ -242,6 +258,32 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
 		Warning,
 		TEXT("GLIDING - Z Velocity: %f"),
 		GetCharacterMovement()->Velocity.Z
+	);
+}
+
+void ADragonLocomotionCharacter::EnterGroundedState()
+{
+	LocomotionState = EDragonLocomotionState::Grounded;
+
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
+
+	GetCharacterMovement()->StopMovementImmediately();
+
+	FlightYawInput = 0.0f;
+	FlightPitchInput = 0.0f;
+	TargetRoll = 0.0f;
+	TargetPitch = 0.0f;
+
+	TimeSinceLastFlap = 0.0f;
+
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("ENTERING GROUNDED - Velocity: %s | MovementMode: %d"),
+		*GetVelocity().ToString(),
+		GetCharacterMovement()->MovementMode
 	);
 }
 
@@ -389,25 +431,39 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 {
 	UE_LOG(LogDragonLocomotion, Warning, TEXT("Flight Pressed"));
 
-	 
-		if (!GetCharacterMovement()->IsMovingOnGround())
-		{
-			return;
-		}
+	// Ground -> Takeoff
+	if (LocomotionState == EDragonLocomotionState::Grounded)
+	{
+		LocomotionState = EDragonLocomotionState::TakingOff;
 
-	LocomotionState = EDragonLocomotionState::TakingOff;
+		LaunchCharacter(
+			FVector(0.0f, 0.0f, 700.0f),
+			false,
+			true
+		);
 
-	LaunchCharacter(FVector(0.0f, 0.0f, 700.0f), false, true);
+		FlightSpeed = FMath::Clamp(
+			GetVelocity().Length(),
+			MinimumFlightSpeed,
+			ChargeSpeed
+		);
 
-	FlightSpeed = FMath::Clamp(
-		GetVelocity().Length(),
-		MinimumFlightSpeed,
-		ChargeSpeed
-	);
+		GetCharacterMovement()->MaxFlySpeed = FlightSpeed;
 
-	GetCharacterMovement()->MaxFlySpeed = FlightSpeed;
-	 
+		TimeSinceLastFlap = 0.0f;
 
+		return;
+	}
+
+	// Flying/Gliding -> Flap
+	if (LocomotionState == EDragonLocomotionState::Flying ||
+		LocomotionState == EDragonLocomotionState::Gliding)
+	{
+		LocomotionState = EDragonLocomotionState::Flying;
+		TimeSinceLastFlap = 0.0f;
+
+		return;
+	}
 }
 
 void ADragonLocomotionCharacter::OnFlightReleased()
@@ -426,6 +482,11 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 
 	switch (LocomotionState)
 	{
+		case EDragonLocomotionState::Grounded:
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bUseControllerRotationYaw = false;
+			break;
+
 		case EDragonLocomotionState::TakingOff:
 		
 			// Tranistion into flight

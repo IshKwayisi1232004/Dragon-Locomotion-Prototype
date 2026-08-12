@@ -111,6 +111,15 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Gliding")
     float GlideFallRate = 20.0f;
 
+    UPROPERTY(EditAnywhere, Category = "Flying")
+    float FlightGracePeriod = 3.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flying")
+    float TimeSinceLastFlap = 0.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    bool bIsFlapping = false;
+
 
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -165,6 +174,10 @@ protected:
     void UpdateFlight(float DeltaTime);
 
     void UpdateGlide(float DeltaTime);
+
+    void UpdateLanding(float DeltaTime); 
+
+    void EnterGroundedState();
      
 
 public:
