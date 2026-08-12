@@ -227,6 +227,16 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
 
+	// Keep camera behind the dragon with limited offset
+	FRotator ControlRotation = GetControlRotation();
+	ControlRotation.Yaw =
+		GetActorRotation().Yaw + FlightCameraYawOffset;
+
+	ControlRotation.Pitch =
+		GetActorRotation().Pitch + FlightCameraPitchOffset;
+
+	GetController()->SetControlRotation(ControlRotation);
+
 	UE_LOG(
 		LogDragonLocomotion,
 		Warning,
@@ -251,6 +261,15 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		//
 		// Keyboard:
 		// - WASD produces full-strength input, so it runs.
+
+		if (LocomotionState == EDragonLocomotionState::Flying ||
+			LocomotionState == EDragonLocomotionState::Gliding)
+		{
+			FlightYawInput = Right;
+			FlightPitchInput = -Forward;
+
+			return;
+		}
 
 		if (bIsCharging && Right == 0.0f && Forward == 0.0f) {
 			Forward = 1.0f;

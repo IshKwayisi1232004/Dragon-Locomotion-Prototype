@@ -109,7 +109,7 @@ protected:
 
     /***/
     UPROPERTY(EditAnywhere, Category = "Gliding")
-    float GlideFallRate = 100.0f;
+    float GlideFallRate = 20.0f;
 
 
     /** Jump Input Action */
