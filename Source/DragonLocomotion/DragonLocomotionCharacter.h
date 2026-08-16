@@ -25,6 +25,15 @@ enum class EDragonLocomotionState : uint8
     Landing UMETA(DisplayName = "Landing"),
 };
 
+
+UENUM(BlueprintType)
+enum class EDragonJumpState : uint8
+{
+    Idle UMETA(DisplayName = "Idle"),
+    Moving UMETA(DisplayName = "Moving"),
+    Charge UMETA(DisplayName = "Charge"),
+};
+
 /**
 
 - A simple player-controllable third person character
@@ -120,6 +129,9 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     bool bIsFlapping = false;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    bool bIsJumping = false;
+
 
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -144,6 +156,9 @@ protected:
     /** Flight Input Action */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* FlightAction;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    EDragonJumpState JumpState = EDragonJumpState::Idle;
      
 
 public:

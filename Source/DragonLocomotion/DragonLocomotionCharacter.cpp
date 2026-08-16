@@ -31,7 +31,7 @@ ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 500.f;
+	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -62,8 +62,8 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		 
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::DoJumpStart);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADragonLocomotionCharacter::Move);
@@ -427,7 +427,27 @@ void ADragonLocomotionCharacter::DoLook(float Yaw, float Pitch)
 
 void ADragonLocomotionCharacter::DoJumpStart()
 {
-	// signal the character to jump
+	FVector HorizontalVelocity(
+		GetVelocity().X,
+		GetVelocity().Y,
+		0.0f
+	);
+
+	if (bIsCharging)
+	{
+		JumpState = EDragonJumpState::Charge;
+	}
+	else if (HorizontalVelocity.Size() > 10.0f)
+	{
+		JumpState = EDragonJumpState::Moving;
+	}
+	else
+	{
+		JumpState = EDragonJumpState::Idle;
+	}
+
+	bIsJumping = true;
+
 	Jump();
 }
 
