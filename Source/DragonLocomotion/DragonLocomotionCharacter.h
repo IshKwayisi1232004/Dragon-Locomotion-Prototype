@@ -142,7 +142,7 @@ protected:
     float GlideDrag = 50.0f;
 
     UPROPERTY(EditAnywhere, Category = "Flight")
-    float FlightAcceleration = 4.0f;
+    float FlightTurnSpeed = 4.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flying")
     bool bIsFlapping = false;

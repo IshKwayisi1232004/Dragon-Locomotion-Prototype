@@ -202,8 +202,27 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 	// Apply rotation
 	SetActorRotation(Rotation);
 
-	// Continuously move in the direction the dragon is facing
-	AddMovementInput(GetActorForwardVector(), 1.0f);
+	// Preserve the Dragon's current momentum while flying
+	FVector Velocity = GetVelocity();
+
+	if (!Velocity.IsNearlyZero()) 
+	{
+		const float CurrentSpeed = Velocity.Size();
+
+		// Gradually align the velocity with the Dragon's facing direction
+		// while preserving its current speed
+		const FVector TargetVelocity =
+			GetActorForwardVector() * CurrentSpeed;
+
+		Velocity = FMath::VInterpTo(
+			Velocity,
+			TargetVelocity,
+			DeltaTime,
+			FlightTurnSpeed
+		);
+
+		GetCharacterMovement()->Velocity = Velocity;
+	}
 
 	// Flight should use the dragon's orientation
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -221,23 +240,20 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 
 }
 
-void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
-
+void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
+{
 	if (IsGroundDetected())
 	{
 		EnterGroundedState();
 		return;
 	}
 
-	// Continue moving forward
-	AddMovementInput(GetActorForwardVector(), 1.0f);
-
-	// Apply yaw
+	// Apply yaw.
 	FRotator Rotation = GetActorRotation();
 
 	Rotation.Yaw += FlightYawInput * 90.0f * DeltaTime;
 
-	// Apply banking
+	// Apply banking.
 	TargetRoll = FlightYawInput * 35.0f;
 
 	Rotation.Roll = FMath::FInterpTo(
@@ -249,15 +265,38 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
 
 	SetActorRotation(Rotation);
 
-	// Gradually descend
-	AddMovementInput(FVector::DownVector, GlideFallRate * DeltaTime);
+	// Preserve the Dragon's current momentum while gliding.
+	FVector Velocity = GetVelocity();
 
-	// Keep flight movement behavior
+	if (!Velocity.IsNearlyZero())
+	{
+		const float CurrentSpeed = Velocity.Size();
+
+		// Gradually align the velocity with the Dragon's facing direction
+		// while preserving its current speed.
+		const FVector TargetVelocity =
+			GetActorForwardVector() * CurrentSpeed;
+
+		Velocity = FMath::VInterpTo(
+			Velocity,
+			TargetVelocity,
+			DeltaTime,
+			FlightTurnSpeed
+		);
+
+		// Apply gradual downward movement for gliding.
+		Velocity += FVector::DownVector * GlideFallRate * DeltaTime;
+
+		GetCharacterMovement()->Velocity = Velocity;
+	}
+
+	// Keep flight movement behavior.
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
 
-	// Keep camera behind the dragon with limited offset
+	// Keep camera behind the Dragon with limited offset.
 	FRotator ControlRotation = GetControlRotation();
+
 	ControlRotation.Yaw =
 		GetActorRotation().Yaw + FlightCameraYawOffset;
 
@@ -269,8 +308,9 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime) {
 	UE_LOG(
 		LogDragonLocomotion,
 		Warning,
-		TEXT("GLIDING - Z Velocity: %f"),
-		GetCharacterMovement()->Velocity.Z
+		TEXT("GLIDING - Speed: %f | Z Velocity: %f"),
+		Velocity.Size(),
+		Velocity.Z
 	);
 }
 
@@ -549,11 +589,25 @@ void ADragonLocomotionCharacter::UpdateDive(float DeltaTime)
 
 	// Accelerate in the direction the Dragon is facing
 	FVector Velocity = GetVelocity();
-	const FVector DiveDirection = GetActorForwardVector();
+	float CurrentSpeed = Velocity.Size();
 
-	Velocity += DiveDirection * DiveAcceleration * DeltaTime;
+	if (CurrentSpeed > 0.0f)
+	{
+		// Gradually redirect the velocity toward the direction
+		// the Dragon is facing
+		const FVector TargetVelocity =
+			GetActorForwardVector() * CurrentSpeed;
 
-	// Prevent the Dragon from exceeding the maximum dive speed
+		Velocity = FMath::VInterpTo(
+			Velocity,
+			TargetVelocity,
+			DeltaTime,
+			3.0f
+		);
+	}
+
+	Velocity += GetActorForwardVector() * DiveAcceleration * DeltaTime;
+
 	Velocity = Velocity.GetClampedToMaxSize(MaxDiveSpeed);
 
 	GetCharacterMovement()->Velocity = Velocity; 
