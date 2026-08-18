@@ -528,19 +528,36 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 	{
 		LocomotionState = EDragonLocomotionState::TakingOff;
 
+		// Preserve the Dragon's current horizontal momentum.
+		const FVector CurrentVelocity = GetVelocity();
+		const FVector CurrentHorizontalVelocity =
+			FVector(CurrentVelocity.X, CurrentVelocity.Y, 0.0f);
+
+		const float CurrentHorizontalSpeed = CurrentHorizontalVelocity.Size();
+
+		// Guarantee a minimum forward speed when taking off.
+		FlightSpeed = FMath::Clamp(
+			FMath::Max(CurrentHorizontalSpeed, MinimumFlightSpeed),
+			MinimumFlightSpeed,
+			ChargeSpeed
+		);
+
+		// Use the Dragon's facing direction for the takeoff momentum.
+		const FVector ForwardVelocity =
+			GetActorForwardVector() * FlightSpeed;
+
+		// Launch upward.
 		LaunchCharacter(
 			FVector(0.0f, 0.0f, 700.0f),
 			false,
 			true
 		);
 
-		FlightSpeed = FMath::Clamp(
-			GetVelocity().Length(),
-			MinimumFlightSpeed,
-			ChargeSpeed
-		);
+		// Combine forward momentum with the upward launch.
+		GetCharacterMovement()->Velocity =
+			ForwardVelocity + FVector(0.0f, 0.0f, 700.0f);
 
-		GetCharacterMovement()->MaxFlySpeed = FlightSpeed;
+		GetCharacterMovement()->MaxFlySpeed = MaxDiveSpeed;
 
 		TimeSinceLastFlap = 0.0f;
 
