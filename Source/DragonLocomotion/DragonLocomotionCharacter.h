@@ -120,7 +120,7 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Gliding")
     float GlideFallRate = 20.0f;
 
-    UPROPERTY(VisibleAnywhere, Category = "Flying")
+    UPROPERTY(EditAnywhere, Category = "Flying")
     float FlightGracePeriod = 3.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flying")

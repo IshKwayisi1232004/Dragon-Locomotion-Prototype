@@ -336,7 +336,8 @@ void ADragonLocomotionCharacter::DoMove(float Right, float Forward)
 		// - WASD produces full-strength input, so it runs.
 
 		if (LocomotionState == EDragonLocomotionState::Flying ||
-			LocomotionState == EDragonLocomotionState::Gliding)
+			LocomotionState == EDragonLocomotionState::Gliding || 
+			LocomotionState == EDragonLocomotionState::Diving)
 		{
 			FlightYawInput = Right;
 			FlightPitchInput = -Forward;
@@ -525,7 +526,11 @@ void ADragonLocomotionCharacter::OnFlightReleased()
 void ADragonLocomotionCharacter::UpdateDive(float DeltaTime)
 {
 	// Gradually pitch the Dragon downward
-	TargetPitch = DivePitch;
+	TargetPitch = FMath::Clamp(
+		DivePitch + (FlightPitchInput * 50.0f), 
+		-80.0f,
+		20.0f
+	);
 
 	const FRotator CurrentRotation = GetActorRotation();
 
