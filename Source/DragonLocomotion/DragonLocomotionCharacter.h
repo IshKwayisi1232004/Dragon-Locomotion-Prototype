@@ -56,7 +56,7 @@ class ADragonLocomotionCharacter : public ACharacter
 protected:
 
      
-    /***/
+    /** Current dragon locomotion state */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     EDragonLocomotionState LocomotionState = EDragonLocomotionState::Grounded;
 
@@ -81,7 +81,7 @@ protected:
     float WalkRunThreshold = 0.5f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight")
-    float FlightSpeed;
+    float FlightSpeed = 500.0f;
 
     UPROPERTY(EditAnywhere, Category = "Flight")
     float MinimumFlightSpeed = 300.0f;
@@ -96,7 +96,7 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     float TargetRoll = 0.f;
 
-    /** Calcualte target pitch */
+    /** Calcluate target pitch */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight")
     float TargetPitch = 0.0f;
 
@@ -104,7 +104,7 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
     float FlightCameraYawOffset = 0.0f;
 
-    /** Maxximum camera yaw offset while flying */
+    /** Maximum camera yaw offset while flying */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
     float FlightCameraYawLimit = 45.0f;
 
@@ -116,17 +116,35 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flight/Camera")
     float FlightCameraPitchLimit = 20.0f;
 
-    /***/
+    /** Rate of change during Dragon's fall */
     UPROPERTY(EditAnywhere, Category = "Gliding")
     float GlideFallRate = 20.0f;
 
-    UPROPERTY(EditAnywhere, Category = "Flying")
+    UPROPERTY(VisibleAnywhere, Category = "Flying")
     float FlightGracePeriod = 3.0f;
 
-    UPROPERTY(EditAnywhere, Category = "Flying")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flying")
     float TimeSinceLastFlap = 0.0f;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Diving")
+    float DiveAcceleration = 1200.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Diving")
+    float MaxDiveSpeed = 2400.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Diving")
+    float DivePitch = -50.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Diving")
+    float DivePitchInterpSpeed = 4.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Gliding")
+    float GlideDrag = 50.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight")
+    float FlightAcceleration = 4.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flying")
     bool bIsFlapping = false;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
@@ -156,6 +174,10 @@ protected:
     /** Flight Input Action */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* FlightAction;
+
+    /** Dive Input Action */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* DiveAction;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     EDragonJumpState JumpState = EDragonJumpState::Idle;
@@ -195,7 +217,8 @@ protected:
     void EnterGroundedState();
 
     bool IsGroundDetected() const;
-     
+
+    void UpdateDive(float DeltaTime);
 
 public:
 
@@ -229,6 +252,12 @@ public:
     /** Handles flight takeoff inputs from either controls or UI interfaces */
     UFUNCTION(BlueprintCallable, Category = "Input")
     virtual void OnFlightReleased();
+
+    UFUNCTION(BlueprintCallable, Category = "Input")
+    virtual void OnDivePressed(); 
+
+    UFUNCTION(BlueprintCallable, Category = "Input")
+    virtual void OnDiveReleased();
      
 
 public:

@@ -82,6 +82,11 @@ void ADragonLocomotionCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		//Flight
 		EnhancedInputComponent->BindAction(FlightAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::OnFlightPressed);
 		EnhancedInputComponent->BindAction(FlightAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::OnFlightReleased);
+
+		// Diving 
+		EnhancedInputComponent->BindAction(DiveAction, ETriggerEvent::Started, this, &ADragonLocomotionCharacter::OnDivePressed);
+
+		EnhancedInputComponent->BindAction(DiveAction, ETriggerEvent::Completed, this, &ADragonLocomotionCharacter::OnDiveReleased);
 	}
 	else
 	{
@@ -517,6 +522,91 @@ void ADragonLocomotionCharacter::OnFlightReleased()
 	UE_LOG(LogDragonLocomotion, Warning, TEXT("Flight Released"));
 }
 
+void ADragonLocomotionCharacter::UpdateDive(float DeltaTime)
+{
+	// Gradually pitch the Dragon downward
+	TargetPitch = DivePitch;
+
+	const FRotator CurrentRotation = GetActorRotation();
+
+	const float NewPitch = FMath::FInterpTo(
+		CurrentRotation.Pitch,
+		TargetPitch,
+		DeltaTime,
+		DivePitchInterpSpeed
+	);
+
+	SetActorRotation(FRotator(
+		NewPitch,
+		CurrentRotation.Yaw,
+		CurrentRotation.Roll
+	));
+
+	// Accelerate in the direction the Dragon is facing
+	FVector Velocity = GetVelocity();
+	const FVector DiveDirection = GetActorForwardVector();
+
+	Velocity += DiveDirection * DiveAcceleration * DeltaTime;
+
+	// Prevent the Dragon from exceeding the maximum dive speed
+	Velocity = Velocity.GetClampedToMaxSize(MaxDiveSpeed);
+
+	GetCharacterMovement()->Velocity = Velocity; 
+
+	// Keep the Dragon in flying movement mode while diving 
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+}
+
+void ADragonLocomotionCharacter::OnDivePressed()
+{
+	// Only allow diving while airborne 
+	if (LocomotionState != EDragonLocomotionState::Flying &&
+		LocomotionState != EDragonLocomotionState::Gliding)
+	{
+		return; 
+	}
+
+	LocomotionState = EDragonLocomotionState::Diving; 
+
+	// Make sure we're using flying movement
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("ENTERING DIVE - Velocity: %s"),
+		*GetVelocity().ToString()
+	);
+}
+
+void ADragonLocomotionCharacter::OnDiveReleased()
+{
+	if (LocomotionState != EDragonLocomotionState::Diving)
+	{
+		return;
+	}
+
+	// Perserve the momentum gained during the dive
+	const float CurrentSpeed = GetVelocity().Size();
+
+	FlightSpeed = FMath::Max(CurrentSpeed, MinimumFlightSpeed);
+
+	// Return to normal flight
+	LocomotionState = EDragonLocomotionState::Flying;
+
+	// Restore the normal flight pitch target
+	TargetPitch = 0.0f;
+
+	UE_LOG(
+		LogDragonLocomotion,
+		Warning,
+		TEXT("Exiting DIVE - Flight Speed: %2f | Velocity: %s"),
+		FlightSpeed,
+		*GetVelocity().ToString()
+	);
+}
+
 void ADragonLocomotionCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -551,6 +641,13 @@ void ADragonLocomotionCharacter::Tick(float DeltaTime)
 			
 			// Transition into glide 
 			UpdateGlide(DeltaTime);
+
+			break;
+
+		case EDragonLocomotionState::Diving:
+
+			// Transition into dive
+			UpdateDive(DeltaTime);
 
 			break;
 
