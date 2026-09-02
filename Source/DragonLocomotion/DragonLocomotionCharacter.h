@@ -147,6 +147,10 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flying")
     bool bIsFlapping = false;
 
+    /** Acceleration boost Dragon receives from fire smoke */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flight|Lift")
+    float LiftAcceleration = 0.0f;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     bool bIsJumping = false;
 
@@ -191,6 +195,11 @@ public:
     /** Called every frame */
     virtual void Tick(float DeltaTime) override;
      
+    void SetLiftAcceleration(float NewLiftAcceleration);
+
+    float GetLiftAcceleration() const;
+
+    void ApplyLift(float DeltaTime);
 
 protected:
 

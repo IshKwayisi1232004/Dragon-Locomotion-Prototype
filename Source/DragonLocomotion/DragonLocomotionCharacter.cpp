@@ -224,6 +224,8 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 		GetCharacterMovement()->Velocity = Velocity;
 	}
 
+	ApplyLift(DeltaTime);
+
 	// Flight should use the dragon's orientation
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
@@ -289,6 +291,8 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
 
 		GetCharacterMovement()->Velocity = Velocity;
 	}
+
+	ApplyLift(DeltaTime);
 
 	// Keep flight movement behavior.
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -681,6 +685,30 @@ void ADragonLocomotionCharacter::OnDiveReleased()
 		FlightSpeed,
 		*GetVelocity().ToString()
 	);
+}
+
+void ADragonLocomotionCharacter::SetLiftAcceleration(float NewLiftAcceleration)
+{
+	LiftAcceleration = NewLiftAcceleration;
+}
+
+float ADragonLocomotionCharacter::GetLiftAcceleration() const
+{
+	return LiftAcceleration;
+}
+
+void ADragonLocomotionCharacter::ApplyLift(float DeltaTime)
+{
+	if (FMath::IsNearlyZero(LiftAcceleration))
+	{
+		return;
+	}
+
+	FVector Velocity = GetCharacterMovement()->Velocity;
+
+	Velocity.Z += LiftAcceleration * DeltaTime;
+
+	GetCharacterMovement()->Velocity = Velocity; 
 }
 
 void ADragonLocomotionCharacter::Tick(float DeltaTime)
