@@ -154,6 +154,26 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     bool bIsJumping = false;
 
+    UPROPERTY(EditAnywhere, Category = "Flight|Flap")
+    float FlapLift = 300.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight|Flap")
+    float FlapForwardBoost = 150.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight|Flap")
+    float FlapBoostDuration = 0.3f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight|Flap")
+    float FlapBoostDecay = 500.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight|Glide")
+    float MinimumGlideSpeed = 250.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Flight|Glide")
+    float GlideDeceleration = 100.0f;
+
+    float CurrentFlapBoost = 0.0f;
+
 
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -185,6 +205,7 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     EDragonJumpState JumpState = EDragonJumpState::Idle;
+
      
 
 public:

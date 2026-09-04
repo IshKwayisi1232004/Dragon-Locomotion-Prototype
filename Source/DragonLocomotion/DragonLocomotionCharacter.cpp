@@ -250,12 +250,12 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
 		return;
 	}
 
-	// Apply yaw.
+	// Apply yaw
 	FRotator Rotation = GetActorRotation();
 
 	Rotation.Yaw += FlightYawInput * 90.0f * DeltaTime;
 
-	// Apply banking.
+	// Apply banking
 	TargetRoll = FlightYawInput * 35.0f;
 
 	Rotation.Roll = FMath::FInterpTo(
@@ -267,31 +267,38 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
 
 	SetActorRotation(Rotation);
 
-	// Preserve the Dragon's current momentum while gliding.
-	FVector Velocity = GetVelocity();
+	// Get current velocity
+	FVector Velocity = GetCharacterMovement()->Velocity;
 
-	if (!Velocity.IsNearlyZero())
-	{
-		const float CurrentSpeed = Velocity.Size();
+	// Separate horizontal velocity from vertical velocity
+	FVector HorizontalVelocity(
+		Velocity.X,
+		Velocity.Y,
+		0.0f
+	);
 
-		// Gradually align the velocity with the Dragon's facing direction
-		// while preserving its current speed.
-		const FVector TargetVelocity =
-			GetActorForwardVector() * CurrentSpeed;
+	// Get current horizontal speed
+	float CurrentSpeed = HorizontalVelocity.Size();
 
-		Velocity = FMath::VInterpTo(
-			Velocity,
-			TargetVelocity,
-			DeltaTime,
-			FlightTurnSpeed
-		);
+	// Gradually lose forward momentum
+	CurrentSpeed = FMath::Max(
+		CurrentSpeed - GlideDeceleration * DeltaTime,
+		MinimumGlideSpeed
+	);
 
-		// Apply gradual downward movement for gliding.
-		Velocity += FVector::DownVector * GlideFallRate * DeltaTime;
+	// Continue moving in the Dragon's facing direction
+	HorizontalVelocity =
+		GetActorForwardVector() * CurrentSpeed; 
 
-		GetCharacterMovement()->Velocity = Velocity;
-	}
+	Velocity.X = HorizontalVelocity.X;
+	Velocity.Y = HorizontalVelocity.Y;
 
+	// Gradually descend
+	Velocity.Z -= GlideFallRate * DeltaTime;
+	
+	GetCharacterMovement()->Velocity = Velocity;
+	
+	// Apply lift after the normal glide forces
 	ApplyLift(DeltaTime);
 
 	// Keep flight movement behavior.
@@ -312,8 +319,8 @@ void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
 	UE_LOG(
 		LogDragonLocomotion,
 		Warning,
-		TEXT("GLIDING - Speed: %f | Z Velocity: %f"),
-		Velocity.Size(),
+		TEXT("GLIDING - Horizontal Speed: %f | Z Velocity: %f"),
+		CurrentSpeed,
 		Velocity.Z
 	);
 }
@@ -574,6 +581,23 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 	{
 		LocomotionState = EDragonLocomotionState::Flying;
 		TimeSinceLastFlap = 0.0f;
+
+		FVector Velocity = GetCharacterMovement()->Velocity;
+
+		// Preserve existing momentum while adding a small forward boost
+		Velocity += GetActorForwardVector() * FlapForwardBoost;
+
+		// Add upward impulse
+		Velocity.Z += FlapLift;
+
+		GetCharacterMovement()->Velocity = Velocity;
+
+		UE_LOG(
+			LogDragonLocomotion,
+			Warning,
+			TEXT("FLAP - Velocity: %s"),
+			*GetVelocity().ToString()
+		);
 
 		return;
 	}
