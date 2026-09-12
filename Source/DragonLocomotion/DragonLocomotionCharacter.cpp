@@ -142,6 +142,8 @@ void ADragonLocomotionCharacter::UpdateTakeoff(float DeltaTime) {
 
 void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 {
+	UpdateFlapBoost(DeltaTime);
+
 	UE_LOG(
 		LogDragonLocomotion,
 		Warning,
@@ -244,6 +246,8 @@ void ADragonLocomotionCharacter::UpdateFlight(float DeltaTime)
 
 void ADragonLocomotionCharacter::UpdateGlide(float DeltaTime)
 {
+	UpdateFlapBoost(DeltaTime);
+
 	if (IsGroundDetected())
 	{
 		EnterGroundedState();
@@ -584,8 +588,10 @@ void ADragonLocomotionCharacter::OnFlightPressed()
 
 		FVector Velocity = GetCharacterMovement()->Velocity;
 
+		CurrentFlapBoost = FlapForwardBoost;
+
 		// Preserve existing momentum while adding a small forward boost
-		Velocity += GetActorForwardVector() * FlapForwardBoost;
+		Velocity += GetActorForwardVector() * CurrentFlapBoost;
 
 		// Add upward impulse
 		Velocity.Z += FlapLift;
@@ -733,6 +739,36 @@ void ADragonLocomotionCharacter::ApplyLift(float DeltaTime)
 	Velocity.Z += LiftAcceleration * DeltaTime;
 
 	GetCharacterMovement()->Velocity = Velocity; 
+}
+
+void ADragonLocomotionCharacter::UpdateFlapBoost(float DeltaTime)
+{
+	if (CurrentFlapBoost <= 0.0f)
+	{
+		return;
+	}
+
+	const float PreviousBoost = CurrentFlapBoost;
+
+	CurrentFlapBoost = FMath::Max(
+		CurrentFlapBoost - FlapBoostDecay * DeltaTime,
+		0.0f
+	);
+
+	const float BoostRemoved = PreviousBoost - CurrentFlapBoost;
+
+	if (BoostRemoved <= 0.0f)
+	{
+		return; 
+	}
+
+	FVector Velocity = GetCharacterMovement()->Velocity;
+
+	const FVector ForwardDirection = GetActorForwardVector();
+
+	Velocity -= ForwardDirection * BoostRemoved;
+
+	GetCharacterMovement()->Velocity = Velocity;
 }
 
 void ADragonLocomotionCharacter::Tick(float DeltaTime)

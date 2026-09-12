@@ -43,6 +43,6 @@ public:
 	UBoxComponent* LiftVolume;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lift")
-	float LiftStrength = 1200.0f;
+	float LiftStrength = 2400.0f;
 
 };

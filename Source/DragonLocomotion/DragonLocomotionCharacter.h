@@ -118,7 +118,7 @@ protected:
 
     /** Rate of change during Dragon's fall */
     UPROPERTY(EditAnywhere, Category = "Gliding")
-    float GlideFallRate = 20.0f;
+    float GlideFallRate = 120.0f;
 
     UPROPERTY(EditAnywhere, Category = "Flying")
     float FlightGracePeriod = 3.0f;
@@ -174,6 +174,8 @@ protected:
 
     float CurrentFlapBoost = 0.0f;
 
+    FVector FlapBoostVelocity;
+
 
     /** Jump Input Action */
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -221,6 +223,8 @@ public:
     float GetLiftAcceleration() const;
 
     void ApplyLift(float DeltaTime);
+
+    void UpdateFlapBoost(float DeltaTime);
 
 protected:
 
