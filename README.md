@@ -178,6 +178,27 @@ As a result, the player character is now able to carry speed from their last sta
 
 This prototype is actively being developed. Current work focuses on refining aerial momentum, environmental lift, animation transitions, and locomotion architecture.
 
+## 📁 Project Structure
+
+```text
+[DragonLocomotion]/
+├── [Content]/
+│   ├── [_ExternalActors_]/
+│   ├── [_ExternalObjects_]/
+│   ├── [Characters]/
+│   ├── [Environment]/
+│   ├── [Input]/
+│   ├── [LevelPrototyping]/
+│   ├── [ThirdPerson]/
+│   ├── [Variant_Combat]/
+│   └── [Variant_SideScrolling]/
+├── [Content]/
+├── [Screenshots]/
+├── [Source]/
+├── [docs]/
+└── README.md
+```
+
 ## 📝 Documentation
 
 This README was authored and is maintained by Ishmael Kwayisi to
