@@ -4,7 +4,7 @@
 
 The goal of this project is to design a highly responsive locomotion system featuring grounded movement, momentum-based flight, gliding, banking, and smooth animation transitions using modern Unreal Engine systems.
 
-[![Engine](https://img.shields.io/badge/Unreal_Engine_5-0E1128?style=flat-square&logo=unreal-engine&logoColor=blue)]()
+[![Engine](https://img.shields.io/badge/Unreal_Engine_5-0E1128?style=flat-square&logo=unreal-engine&logoColor=white)]()
 [![Language](https://img.shields.io/badge/C++-00599C?style=flat-square&logo=c%2B%2B&logoColor=white)]()
 [![Status](https://img.shields.io/badge/Status-Incomplete%20-red)]()
 
