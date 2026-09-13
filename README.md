@@ -1,4 +1,4 @@
-# Dragon Locomotion Prototype
+# Soar: A Dragon Locomotion Prototype
 
 > A C++ Unreal Engine 5 gameplay prototype exploring expressive dragon locomotion inspired by the Spyro series.
 
@@ -10,39 +10,40 @@ The goal of this project is to design a highly responsive locomotion system feat
 
 ## 📖 Overview
 
-Soar: A Dragon Locomotion Prototype is a 3D game prototype that explores highly responsive locomotion system featuring grounded movement and momentum-based flight. This project was bought to life when mind kept thinking about the several possibilities of what the upcoming 2027 video game, Spyro: A Realm Beyond would be like. The concept of being able to fly at anytime inspired me to want to learn how to implement a satisfying flight system with my own creative liberties. The goal of the project prototype was to create a working demo that explored creature locomotion and movement programming pyhsics in Unreal Engine. While also having the potential to evolve the mechanic into a plugin for other developers to use.
+Soar: A Dragon Locomotion is a 3D gameplay prototype inspired by the expressive movement and flight mechanics of the Spyro series. The project began as an exploration of how a responsive creature locomotion system could combine grounded movement with momentum-based aerial traversal. The concept of being able to fly at anytime inspired me to want to learn how to implement a satisfying flight system with my own creative liberties. The goal of the project prototype was to create a working demo that explored creature locomotion and movement programming and pyhsics in Unreal Engine. I also designed the system with future extensibility in mind, with the long-term goal of exploring how the locomotion architecture could evolve into a reusable Unreal Engine component or plugin.
 
 ## Contributions
 
 ### My Role: Gameplay Engineer
 
-I was responsible for designing and implementing a custom movement system with the usage of C++ and Unreal's Enhanced Input system  for several of the core
-systems that drive the game's moment-to-moment gameplay.
+I designed and implemented the prototype's core locomotion and gameplay systems using C++ and Unreal Engine's Enhanced Input and Character Movement frameworks.
 
 I developed 7 gameplay systems in Unreal Engine using C++:
 
 - Locomotion State System
 - Ground Movement
 - Momentum-Based Flight
-- Flight Charging
-- Enhanced Input
+- Flight Diving 
 - Camera Follow
 - Movement Debugging
+- Dynamic Lift System
 
 ## Features
 
 - Ground locomotion
+- Walking, running, charging, and jumping
 - Momentum-based flight
-- Gliding
-- Landing transitions
+- Gliding and diving 
+- Banking and aerial turning
+- Environmental lift
+- Ground-to-flight transitions
 - Animation Blueprint integration
-- C++ movement component
 
 ---
 
 ## 🎮 Gameplay
 
-In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to move the player character in their desired direction. The player's goal is to experiement with the Dragon's mobility on the ground and air in the test environment. The player can charge [Right Shift/B], jump [Space/B], and enter flight [Enter/Right Trigger]. The goal of the prototype is to explore and learn about making an intuitive and seamless gameplay mechanic with vector-based momentum.
+In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to move the player character in their desired direction. The prototype is designed as a movement sandbox where players can experiment with the dragon's mobility across ground and aerial environments. The player can charge [Right Shift/B], jump [Space/B], and enter flight [Enter/Right Trigger]. The prototype focuses on exploring how vector-based momentum can be used to create intuitive and responsive aerial movement.
 
 ### Controls
 
@@ -52,9 +53,9 @@ In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to mo
 |---|---|---|
 | Move | WASD | Left Stick |
 | Camera | Mouse | Right Stick | 
-| Charge | Right Shift | B | 
+| Charge | Right Shift | X | 
 | Jump | Space | A | 
-| TakeOff | Enter | Right Trigger | 
+| Take Off | Enter | Right Trigger | 
 
 #### Flight Controls
 
@@ -65,7 +66,8 @@ In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to mo
 | Roll Right | D | Left Stick Right |
 | Roll Left | A | Left Stick Left |
 | Camera | Mouse | Right Stick | 
-| Dive | Right Shift | B | 
+| Dive | Right Shift | X | 
+| Flap | Enter | Right Trigger | 
 
 ---
 
@@ -75,14 +77,13 @@ In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to mo
 
 The ground & flight locomotion was implemented using Unreal Engine's Character Movement framework systems to handle ground movement and locomotion states.
 
-- Implemented a state-based locomotion system that manages transitions between Grounded, Taking Off, Flying, Gliding, Diving, and Landing states..
+- Implemented a state-based locomotion system that manages transitions between Grounded, Taking Off, Flying, Gliding, Diving, and Landing states.
 - Implemented walk, run, charging and jumping using Unreal Engine's Character Movement framework.
-- Implemented 6 flight states: Taking Off, Flying, Gliding, Diving, Landing, and Grounded.
 - Dynamically switched SetMovementMode() between MOVE_Flying and MOVE_Walking to transition between aerial and ground locomotion.
 
 ### Momentum-Based Flight
 
-Momentum-Based implemented through the use of C++ logic to carry the dragon's existing momentum into the ariel state, as opposed to resetting it.
+Momentum-based flight was implemented using C++ movement logic to preserve the dragon's existing horizontal momentum when transitioning from ground to aerial movement rather than resetting its velocity.
 
 - Used FMath and velocity calculations to control acceleration, speed, and directional changes during flight.
 - Preserved horizontal momentum by retrieving the character's velocity with GetVelocity() and storing the X/Y components in an FVector.
@@ -106,13 +107,13 @@ The dynamic lift system uses Unreal Engine's collision and overlap framework to 
 ### Challenge 1 — Ground/Flight Transition
 
 **Problem:**  
-One of the major challenges during development was accurately and smoothly transitioning the player character from ground to ariel and vice-verca. In the duration of a few tests, I discovered that the player character would get stuck in the flight state despite touching the ground to transition to the land state. This caused that iteration of the protoype to elicit a buggy and unpolished experience. 
+During testing, the dragon could become stuck in the flight movement mode after contacting the ground, preventing the locomotion state from transitioning correctly to landing.
 
 **Solution:**  
-To resolve this problem, I used Unreal Engine's logging to identify the MovementMode of the player. Through Unreal's logging, I diagnosed that Unreal's CharacterMoveComponent state was stuck in flight mode as opposed to transitioning. After, diagnosising the issue, I implemented a line trace from the player capsule to detect how far the player is from the ground. If the line trace hits the ground, then the player transitions into ground mode. 
+To resolve this problem, I used Unreal Engine's logging to identify the MovementMode of the player. Through Unreal's logging, I diagnosed that Unreal's CharacterMovementComponent state was stuck in flight mode as opposed to transitioning. After, diagnosising the issue, I implemented a line trace from the player capsule to detect how far the player is from the ground. If the line trace hits the ground, then the player transitions into ground mode. 
 
 **Result:**  
-After solving this issue, I managed to keep adjusting the line tracer for better accuracy in detecting the ground. Resulting in seamless transitions, a polished gameplay experience and stronger foundation to build upon in future iterations. 
+After solving this issue, I managed to keep adjusting the line trace for better accuracy in detecting the ground. Resulting in seamless transitions, a polished gameplay experience and stronger foundation to build upon in future iterations. 
 
 ---
 
@@ -123,71 +124,75 @@ During the development, I also encountered the challenge of preserving forward m
 
 
 **Solution:**  
-To solve this issue, I used Unreal's GetCharacterMovement() function to capture the speed before they transition into flight. In implementation I set GetCharacterMovement()-> MaxFlySpeed to the current FlightSpeed and clamped it to prevent an unreasonable amount of speed from being generated. 
+To solve this issue, I used Unreal Engine's GetCharacterMovement() function to access the Character Movement Component and determine the player's current movement velocity before transitioning into flight. I then set GetCharacterMovement()->MaxFlySpeed based on the current FlightSpeed and clamped the value to prevent excessive speeds. I also extracted and stored the character's horizontal velocity, which was then applied to the player character upon entering flight mode.
 
 **Result:**  
 As a result, the player character is now able to carry speed from their last state. Allowing for the player to comfortably make change gameplay states with intention and satisfaction. While also strengthening the current prototype. 
 
 ## 🚀 What I Learned
 
-- 
-- 
-- 
+- During development of Soar: A Dragon Locomotion Prototype, I learned the importance of utilizing Unreal Engine's logging to identify issues quickly and iterate on intitial implementations. The use of Unreal's logging helped me become effective and coordinated in solving problems with Unreal Engine.
+- I also learned how to meticulously plan and execute gameplay systems heavily relying on mathematics. With prior experiences with game projects, there was math involved, but not to the same level as this protoype. As momentum and physics are the key central point to my the gameplay mechanics. Through this, I understood process of integrating complex gameplay systems. 
+- Lastly, I learned how to plan, build, iterate, and test new gameplay mechanics. This was my first Unreal Engine project where I worked on developing a complex gameplay mechanic. To compensate for the complex of the project, I needed to use the 4 phases to deliver a richly satisfying mechanic that can be continued to be re-iterated.
 
 ---
 
 ## 🔮 Future Improvements
 
-- The next step I want to take with Dragon Locomotion prototype is to refine and and polish the flight mechanics. Essentially, I want to minimize the amount of bugs to enhance the overall gameplay experience. For example, when the player presses the takeoff button, they instantly lose forward momentum without flapping the dragon's wings. The goal with this fix is to ensure that the dragon can carry forward momentum, but loses speed (forward velocity drops to a minimum speed, not 0) when the player isn't engaging with the game's mechanics. Thus, resulting the dragon gliding downward to ground level. 
+- The next step I want to take with Soar: A Dragon Locomotion Prototype is to refine and and polish the flight mechanics. Essentially, I want to minimize the amount of bugs to enhance the overall gameplay experience. For example, when the player presses the takeoff button, they instantly lose forward momentum without flapping the dragon's wings. The goal with this fix is to ensure that the dragon can carry forward momentum, but loses speed (forward velocity drops to a minimum speed, not 0) when the player isn't engaging with the game's mechanics. Thus, resulting the dragon gliding downward to ground level. 
 - Another improvement I'd like to make is explore and implement ways for the player to engage with the environment to create lift and generate more forward momentum. Employing the player to become an active participant while playing/testing the prototype.  
-- Lastly, I'd like to focus on transforming my custom ground/ariel locomotion system into it own component system. That way I can create behavior that Unreal Engine does not provide. Ultimately, making my system reusable and compatible to become a plugin.  
+- Refactor the locomotion architecture into a dedicated movement component to improve modularity and explore Unreal Engine's lower-level movement systems.  
 
 ---
 
 ## 🎥 Gameplay / Demo
 
-**Itch.io Demo:** https://ishmael-kwayisi.itch.io/project-not-zelda
-
-**Video Demo:** [Mini Gameplay Demo](Screenshots/Project-Not-Zelda-Arrow-Combat.mp4)
+**Video Demo:** Will be displayed soon!
 
 ---
 
 ## 📸 Screenshots
 
-### [Pause Game]
+### Dragon Charge
 
-![PauseMenu](Screenshots/Project-Not-Zelda-Screenshot1.png)
+![Charge](Screenshots/DragonLocomotion_1.png)
 
-### [Player combat]
+### Dragon Flight
 
-![Player Combat](Screenshots/Project-Not-Zelda-Screenshot2.png)
+![Flight](Screenshots/DragonLocomotion_2.png)
 
-### [Player Combat Arrow]
+### Jump Mid-Air
 
-![Arrow](Screenshots/Project-Not-Zelda-Screenshot3.png)
-
-### [Endgame]
-
-![Endgame](Screenshots/Project-Not-Zelda-Screenshot4.png)
+![Jump](Screenshots/DragonLocomotion_3.png)
 
 ---
 ## Tech Stack
-- Unreal Engine 5.8
+- Unreal Engine 5.6
 - C++
 - Enhanced Input
 - Animation Blueprints
 - Git LFS
 ---
 
-## Planned Features
-- [ ] Polish
-- [ ] Environment Engagement
+## 🚧 Project Status
+
+This prototype is actively being developed. Current work focuses on refining aerial momentum, environmental lift, animation transitions, and locomotion architecture.
 
 ## 📝 Documentation
 
 This README was authored and is maintained by Ishmael Kwayisi to
 document the project's development, technical implementation, and
 solo contributions.
+
+## 🎨 Credits & Attribution
+
+- **Elemental Dragon** — MalberS Animations via Fab
+  - Used for dragon character models and animations.
+  - Licensed under the **Fab Standard License**.
+
+- **Stylized VFX Collection : Fire** — Polyart Studio via Fab
+  - Used for fire models, vfx and animations.
+  - Licensed under the **Fab Standard License**.
 
 ## License
 
