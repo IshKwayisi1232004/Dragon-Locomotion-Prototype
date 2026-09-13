@@ -71,6 +71,32 @@ In Soar: A Dragon Locomotion Prototype, the player uses WASD or Left Stick to mo
 
 ## 🛠️ Technical Implementation
 
+### Ground & Flight Locomotion
+
+The ground & flight locomotion was implemented using Unreal Engine's Character Movement framework systems to handle ground movement and locomotion states.
+
+- Implemented a state-based locomotion system that manages transitions between Grounded, Taking Off, Flying, Gliding, Diving, and Landing states..
+- Implemented walk, run, charging and jumping using Unreal Engine's Character Movement framework.
+- Implemented 6 flight states: Taking Off, Flying, Gliding, Diving, Landing, and Grounded.
+- Dynamically switched SetMovementMode() between MOVE_Flying and MOVE_Walking to transition between aerial and ground locomotion.
+
+### Momentum-Based Flight
+
+Momentum-Based implemented through the use of C++ logic to carry the dragon's existing momentum into the ariel state, as opposed to resetting it.
+
+- Used FMath and velocity calculations to control acceleration, speed, and directional changes during flight.
+- Preserved horizontal momentum by retrieving the character's velocity with GetVelocity() and storing the X/Y components in an FVector.
+- Applied a small forward impulse during aerial transitions to help maintain and build momentum 
+- Used FRotator to control the dragon's roll during directional turns.
+
+### Dynamic Lift System
+
+The dynamic lift system uses Unreal Engine's collision and overlap framework to detect when the dragon enters a designated lift volume and apply an upward force.
+
+- Implemented a custom UBoxComponent-based volume to define the area affected by the lift.
+- Used OnComponentBeginOverlap() and OnComponentEndOverlap() to detect when the dragon enters and exits the lift volume.
+- Integrated the lift volume with the dragon's flight system to provide an environmental upward boost.
+- Added a particle effect to visually communicate the location and presence of the lift volume.
 
 
 ---
@@ -155,7 +181,7 @@ As a result, the player character is now able to carry speed from their last sta
 
 ## Planned Features
 - [ ] Polish
-- [ ]PLayer Engagement
+- [ ] Environment Engagement
 
 ## 📝 Documentation
 

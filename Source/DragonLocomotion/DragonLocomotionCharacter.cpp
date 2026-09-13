@@ -17,8 +17,8 @@ ADragonLocomotionCharacter::ADragonLocomotionCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	 
-		// Set size for collision capsule
-		GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	// Set size for collision capsule
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -110,7 +110,6 @@ void ADragonLocomotionCharacter::Move(const FInputActionValue& Value)
 
 	DoMove(MovementVector.X, MovementVector.Y);
 	 
-
 }
 
 void ADragonLocomotionCharacter::Look(const FInputActionValue& Value)
